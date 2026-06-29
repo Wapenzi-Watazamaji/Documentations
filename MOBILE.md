@@ -673,6 +673,76 @@ If `consentGranted` is `false` (mother's emergency sharing preference is `ASK_FI
 
 ---
 
+### `GET /api/profile/lookup/{qrToken}/full-history`
+
+Returns the patient's **complete cross-module record** — every `FormSubmission`, `ScheduledVisit`, labour session, and baby record — for emergency or referral use, as opposed to the condensed summary returned by the plain QR lookup above. This is the endpoint behind a "View full patient history" action triggered from a scanned QR code. Requires the requester to hold a `CLINICIAN` or `FACILITY_ADMIN` role token, and requires `consentGranted: true` under the same consent rules as the standard QR lookup — a facility cannot get more data by hitting this endpoint than it was already entitled to see.
+
+**Path parameters:** `qrToken` (string)
+
+**Response `200 OK`:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": { "...": "User entity" },
+    "profile": { "...": "Profile entity" },
+    "currentStage": "PREGNANT",
+    "pregnancy": { "...": "PregnancyRecord entity, if applicable" },
+    "cycleHistory": [ { "...": "FormSubmission entity, context: CYCLE_ENTRY" } ],
+    "pregnancyVitalsHistory": [ { "...": "FormSubmission entity, context: PREGNANCY_VITALS" } ],
+    "scheduledVisits": [ { "...": "ScheduledVisit entity" } ],
+    "labourSessions": [ { "...": "LabourSession entity, with nested readings" } ],
+    "postpartumCheckins": [ { "...": "FormSubmission entity, context: MATERNAL_CHECKIN" } ],
+    "babyProfile": { "...": "BabyProfile entity, if applicable" },
+    "babyVitalsHistory": [ { "...": "FormSubmission entity, context: BABY_VITALS" } ],
+    "activeRiskFlags": ["REDUCED_FETAL_MOVEMENT"],
+    "allergies": [],
+    "emergencyContact": { "name": "James Kamau", "relationship": "Husband", "phoneNumber": "+254721556002" },
+    "consentGranted": true,
+    "accessLoggedAt": "2026-06-29T08:32:00Z"
+  }
+}
+```
+
+If `consentGranted` is `false`, the response shape matches the standard QR lookup's denial response (`consentGranted: false, consentRequestSent: true`) — no history fields are included.
+
+**Important:** every successful call to this endpoint is written to an access log (`accessLoggedAt` in the response confirms this) visible to the patient via `GET /api/profile/access-log` (see below), so she can always see who has viewed her full record and when, regardless of which of the two access paths (QR or standing consent) was used.
+
+**Errors:** `404 QR_TOKEN_NOT_FOUND`, `410 QR_TOKEN_EXPIRED`, `403 CONSENT_REQUIRED`.
+
+---
+
+### `GET /api/profile/access-log`
+
+Lets the mother see every time her full history was accessed by a facility, via either access path.
+
+**Response `200 OK`:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "accessedBy": "Kilifi County Hospital",
+      "accessedByUserId": "usr_doc_4471",
+      "accessMethod": "QR_SCAN",
+      "accessedAt": "2026-06-29T08:32:00Z"
+    },
+    {
+      "accessedBy": "Malindi Sub-County Hospital",
+      "accessedByUserId": "usr_clin_5521",
+      "accessMethod": "STANDING_CONSENT",
+      "accessedAt": "2026-06-20T14:10:00Z"
+    }
+  ]
+}
+```
+
+`accessMethod`: `QR_SCAN` | `STANDING_CONSENT` | `REFERRAL`.
+
+---
+
 ### `PUT /api/profile/preferred-units`
 
 **Request body:** `{ "facilityIds": ["fac_1029", "fac_1031"] }`
@@ -2351,6 +2421,24 @@ Allows facility staff to submit a `FormSubmission` on behalf of a patient — fo
 **Response `201 Created`:** `{ "success": true, "data": { "...": "FormSubmission entity, enteredBy: the staff member's user ID, subjectUserId: the patient's user ID" } }`
 
 The distinction between `enteredBy` and `subjectUserId` is what lets the clinician dashboard and mobile timeline both correctly show "logged by your care team" versus "logged by you," exactly as previously handled for CHP-assisted entries, now generalized to any facility-staff-entered record.
+
+---
+
+### `GET /api/facility-admin/patients/{patientId}/full-history`
+
+The "View patient history" action available on a patient's record screen on web, for any facility that already holds **standing consent** (e.g. she selected this facility as a preferred unit, or previously granted access) — no QR scan or active referral required. This returns the exact same shape as mobile's [`GET /api/profile/lookup/{qrToken}/full-history`](#get-apiprofilelookupqrtokenfull-history), just reached via a different access path appropriate to a facility staff member already browsing the patient list rather than scanning a code. **Role required:** `CLINICIAN` or `FACILITY_ADMIN`.
+
+**Response `200 OK`:** `{ "success": true, "data": { "...": "Same full-history shape as the QR variant, consentGranted: true, accessLoggedAt set" } }`
+
+**Response `200 OK`** (no standing consent — e.g. random facility browsing a patient with no relationship to them, which should not normally be reachable via the UI but is still gated server-side):
+
+```json
+{ "success": true, "data": { "consentGranted": false } }
+```
+
+This call is recorded in the patient's access log with `accessMethod: STANDING_CONSENT`, exactly like the QR path is recorded with `accessMethod: QR_SCAN` — both surface identically in `GET /api/profile/access-log`, so the mother always has one unified view of who has looked at her full record and how.
+
+**Errors:** `403 CONSENT_REQUIRED`, `404 NOT_FOUND`.
 
 ---
 

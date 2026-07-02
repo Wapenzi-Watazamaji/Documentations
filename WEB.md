@@ -5,7 +5,7 @@
 **Base URL:** `https://api.bintic.care/api` *(same backend as mobile — placeholder, update once deployed)*
 **Protocol:** REST over HTTPS
 **Authentication:** JWT Bearer tokens
-**Companion document:** [Binti Care — Mobile API Documentation](./mobile_api_documentation.md) — the canonical source for entities and endpoints shared across both platforms. This document does not repeat those definitions in full; see [Shared Entities (Reference)](#shared-entities-reference) below for a quick index of what lives where.
+**Companion document:** [Binti Care — Mobile API Documentation](./mobilebackend.md) — the canonical source for entities and endpoints shared across both platforms. This document does not repeat those definitions in full; see [Shared Entities (Reference)](#shared-entities-reference) below for a quick index of what lives where.
 
 ---
 
@@ -30,7 +30,7 @@
 
 ## Conventions
 
-Identical to the mobile API: same response envelope (`{success, data, meta, error}`), same pagination shape, same ISO 8601 UTC timestamp convention, same JWT Bearer auth. See the [mobile documentation's Conventions section](./mobile_api_documentation.md#conventions) for the full detail. Two additions specific to web:
+Identical to the mobile API: same response envelope (`{success, data, meta, error}`), same pagination shape, same ISO 8601 UTC timestamp convention, same JWT Bearer auth. See the [mobile documentation's Conventions section](./mobilebackend.md#conventions) for the full detail. Two additions specific to web:
 
 ### Headers
 
@@ -59,17 +59,17 @@ These are defined in full in the mobile documentation and used as-is by the web 
 
 | Entity | Defined in mobile doc | Web app's relationship to it |
 |---|---|---|
-| `User` | [Core Entities](./mobile_api_documentation.md#user) | Web reads/writes `CLINICIAN` and `FACILITY_ADMIN` users too, not just `MOTHER` |
-| `Profile` | [Core Entities](./mobile_api_documentation.md#profile-extended-mother-specific-fields) | Web reads this when viewing a patient; writes `personalDoctorId`, `personalDoctorRequestStatus`, `preferredUnitIds` indirectly via assignment endpoints |
-| `Consent` | [Core Entities](./mobile_api_documentation.md#consent) | Web reads to determine whether a referral or QR scan can reveal patient data |
-| `FormTemplate` | [Core Entities](./mobile_api_documentation.md#formtemplate) | Web is the **only** place templates are created/extended (see [Module 10](#10-facility-managed-patients)) |
-| `FormSubmission` | [Core Entities](./mobile_api_documentation.md#formsubmission) | Web reads all submission types for review/feedback; can write on a patient's behalf |
-| `CarePathwayTemplate` / `ScheduledVisit` | [Core Entities](./mobile_api_documentation.md#carepathwaytemplate) | Web reads to display ANC/postnatal/vaccination schedules; can create manual ad-hoc visits |
-| `LabourSession` / `LabourReading` | [Core Entities](./mobile_api_documentation.md#laboursession) | Web **owns all writes** — every labour reading, alert, and resuscitation log entry is created from the web app |
-| `BabyProfile` | [Core Entities](./mobile_api_documentation.md#babyprofile) | Web reads; mobile owns creation |
-| `Facility` | [Core Entities](./mobile_api_documentation.md#facility) | Web owns all writes (registration, profile edits, readiness toggles) |
-| `Referral` | [Core Entities](./mobile_api_documentation.md#referral) | Mobile creates emergency requests; web handles accept/reject/complete and the receiving-side review |
-| `Reminder` / `Notification` | [Core Entities](./mobile_api_documentation.md#reminder) | Web can create reminders on a patient's behalf; notifications are read-only from web's perspective |
+| `User` | [Core Entities](./mobilebackend.md#user) | Web reads/writes `CLINICIAN` and `FACILITY_ADMIN` users too, not just `MOTHER` |
+| `Profile` | [Core Entities](./mobilebackend.md#profile-extended-mother-specific-fields) | Web reads this when viewing a patient; writes `personalDoctorId`, `personalDoctorRequestStatus`, `preferredUnitIds` indirectly via assignment endpoints |
+| `Consent` | [Core Entities](./mobilebackend.md#consent) | Web reads to determine whether a referral or QR scan can reveal patient data |
+| `FormTemplate` | [Core Entities](./mobilebackend.md#formtemplate) | Web is the **only** place templates are created/extended (see [Module 10](#10-facility-managed-patients)) |
+| `FormSubmission` | [Core Entities](./mobilebackend.md#formsubmission) | Web reads all submission types for review/feedback; can write on a patient's behalf |
+| `CarePathwayTemplate` / `ScheduledVisit` | [Core Entities](./mobilebackend.md#carepathwaytemplate) | Web reads to display ANC/postnatal/vaccination schedules; can create manual ad-hoc visits |
+| `LabourSession` / `LabourReading` | [Core Entities](./mobilebackend.md#laboursession) | Web **owns all writes** — every labour reading, alert, and resuscitation log entry is created from the web app |
+| `BabyProfile` | [Core Entities](./mobilebackend.md#babyprofile) | Web reads; mobile owns creation |
+| `Facility` | [Core Entities](./mobilebackend.md#facility) | Web owns all writes (registration, profile edits, readiness toggles) |
+| `Referral` | [Core Entities](./mobilebackend.md#referral) | Mobile creates emergency requests; web handles accept/reject/complete and the receiving-side review |
+| `Reminder` / `Notification` | [Core Entities](./mobilebackend.md#reminder) | Web can create reminders on a patient's behalf; notifications are read-only from web's perspective |
 
 ---
 
@@ -173,7 +173,7 @@ The aggregate shape returned by the trends/reporting endpoints. Not a persisted 
 
 ### `POST /api/auth/login`
 
-Same endpoint and shape as the mobile documentation's [`POST /api/auth/login`](./mobile_api_documentation.md#post-apiauthlogin) — a `CLINICIAN` or `FACILITY_ADMIN` logs in with the same mechanism a `MOTHER` does. The returned `User.role` determines which app shell the frontend renders.
+Same endpoint and shape as the mobile documentation's [`POST /api/auth/login`](./mobilebackend.md#post-apiauthlogin) — a `CLINICIAN` or `FACILITY_ADMIN` logs in with the same mechanism a `MOTHER` does. The returned `User.role` determines which app shell the frontend renders.
 
 **Request body:** `{ "phoneNumber": "+254712000111", "password": "SecurePass123" }` *(or `email` instead of `phoneNumber` — both are accepted login identifiers for staff accounts)*
 
@@ -464,7 +464,7 @@ Powers the patient detail sidebar — pregnancy summary, care team, emergency co
 
 ### `GET /api/patients/{userId}/pregnancy-vitals`
 
-Equivalent to mobile's [`GET /api/pregnancy/patients/{patientId}/vitals`](./mobile_api_documentation.md#get-apipregnancypatientspatientidvitals) — documented again here under the web-facing path for clarity, same underlying `FormSubmission` records.
+Equivalent to mobile's [`GET /api/pregnancy/patients/{patientId}/vitals`](./mobilebackend.md#get-apipregnancypatientspatientidvitals) — documented again here under the web-facing path for clarity, same underlying `FormSubmission` records.
 
 **Query params:** `filter` (`ALL` | `FLAGGED` | `VITALS_ONLY` | `SYMPTOMS_ONLY`), `page`, `pageSize`
 
@@ -474,7 +474,7 @@ Equivalent to mobile's [`GET /api/pregnancy/patients/{patientId}/vitals`](./mobi
 
 ### `POST /api/patients/{userId}/pregnancy-vitals/{submissionId}/feedback`
 
-Same endpoint as mobile's [`POST /api/pregnancy/vitals/{id}/feedback`](./mobile_api_documentation.md#post-apipregnancyvitalsidfeedback). Repeated here because the web UI's "respond to entry" inline box also supports a review-only action with no message:
+Same endpoint as mobile's [`POST /api/pregnancy/vitals/{id}/feedback`](./mobilebackend.md#post-apipregnancyvitalsidfeedback). Repeated here because the web UI's "respond to entry" inline box also supports a review-only action with no message:
 
 **Request body (with message):** `{ "message": "Mild ankle swelling is common at this stage, but let's keep an eye on it." }`
 
@@ -515,7 +515,7 @@ This is the only way a risk level shown to the patient on mobile differs from th
 
 ## 4. Labour & Birth Monitoring
 
-This module owns all writes to the `LabourSession` and `LabourReading` entities defined in the [mobile documentation's Core Entities](./mobile_api_documentation.md#laboursession) — mobile only reads a simplified status view. Full endpoint detail for session creation, readings, the partograph data shape, alerts, and the resuscitation protocol is already documented in the mobile doc's [Module 5: Labour & Birth Monitor](./mobile_api_documentation.md#5-labour--birth-monitor); every endpoint listed there is called from the web app in practice. This section adds the facility-wide views that only make sense on web.
+This module owns all writes to the `LabourSession` and `LabourReading` entities defined in the [mobile documentation's Core Entities](./mobilebackend.md#laboursession) — mobile only reads a simplified status view. Full endpoint detail for session creation, readings, the partograph data shape, alerts, and the resuscitation protocol is already documented in the mobile doc's [Module 5: Labour & Birth Monitor](./mobilebackend.md#5-labour--birth-monitor); every endpoint listed there is called from the web app in practice. This section adds the facility-wide views that only make sense on web.
 
 ### `GET /api/labour-sessions/active`
 
@@ -588,6 +588,12 @@ Powers the Labour Alerts module's stat row (active sessions, critical count, wat
 
 ## 5. Postpartum & Baby Monitoring
 
+> [!NOTE]
+> **Architectural Note: Separate Entities**
+> During the postnatal period, the mother and the baby (or babies) are tracked as completely **separate clinical entities** linked by a `PregnancyRecord`. 
+> - **MotherPostnatalContext**: Tracks her physical recovery (lochia, c-section wound), breast health (mastitis), and mental health (EPDS screenings).
+> - **BabyProfile (1-to-Many)**: Tracks the newborn's pediatric milestones, growth percentiles, and feeding schedules. 
+> This strict separation ensures clean data handling for twins/multiples and prevents overlapping clinical milestones.
 ### `GET /api/postpartum-alerts/summary`
 
 Facility-wide postpartum and newborn alert feed, separated into maternal and newborn streams.
@@ -659,7 +665,7 @@ Facility-wide postpartum and newborn alert feed, separated into maternal and new
 
 ## 6. Referral Network — Facility Side
 
-The `Referral` entity and its core lifecycle endpoints (`POST /api/referrals`, accept/reject/complete, patient-summary) are fully documented in the [mobile doc's Module 7](./mobile_api_documentation.md#7-universal-referral-network--facilities) — mobile creates referrals, web (this module) is where a facility reviews and acts on them. This section covers the web-specific inbox and tracking views layered on top of that same data.
+The `Referral` entity and its core lifecycle endpoints (`POST /api/referrals`, accept/reject/complete, patient-summary) are fully documented in the [mobile doc's Module 7](./mobilebackend.md#7-universal-referral-network--facilities) — mobile creates referrals, web (this module) is where a facility reviews and acts on them. This section covers the web-specific inbox and tracking views layered on top of that same data.
 
 ### `GET /api/referrals/inbox`
 
@@ -742,7 +748,7 @@ A facility-initiated outgoing referral (as opposed to mobile's emergency-request
 
 ## 7. Facility & Staff Management
 
-The `Facility` entity and its core read/write endpoints (`GET/PUT /api/facilities/{id}`, `PUT /api/facilities/{id}/availability`, staff add/remove) are fully documented in the [mobile doc's Module 7](./mobile_api_documentation.md#7-universal-referral-network--facilities), since mobile reads facility data too. This section covers the web-only staff workload and invite-flow views.
+The `Facility` entity and its core read/write endpoints (`GET/PUT /api/facilities/{id}`, `PUT /api/facilities/{id}/availability`, staff add/remove) are fully documented in the [mobile doc's Module 7](./mobilebackend.md#7-universal-referral-network--facilities), since mobile reads facility data too. This section covers the web-only staff workload and invite-flow views.
 
 ### `GET /api/facility-admin/staff`
 
@@ -816,7 +822,7 @@ The `Facility` entity and its core read/write endpoints (`GET/PUT /api/facilitie
 
 **Response `200 OK`:** `{ "success": true, "data": { "...": "StaffMember entity, status: DEACTIVATED" } }`
 
-Deactivating a staff member does not delete their historical records (feedback messages, readings they recorded) — it only revokes login and removes them from future assignment pools. Their existing assigned patients must be reassigned via `PUT /api/facility-admin/patients/{patientId}/assign-clinician` (see the [mobile doc's Module 11](./mobile_api_documentation.md#11-facility-managed-patients--manual-entry)).
+Deactivating a staff member does not delete their historical records (feedback messages, readings they recorded) — it only revokes login and removes them from future assignment pools. Their existing assigned patients must be reassigned via `PUT /api/facility-admin/patients/{patientId}/assign-clinician` (see the [mobile doc's Module 11](./mobilebackend.md#11-facility-managed-patients--manual-entry)).
 
 ---
 
@@ -896,7 +902,7 @@ Report generation is asynchronous — the client polls `GET /api/reports/{id}` (
 
 ## 9. Education Content Management
 
-The `EducationContent` and `EducationEvent` entities and the patient-facing read endpoints (`GET /api/education/feed`, etc.) are documented in the [mobile doc's Module 9](./mobile_api_documentation.md#9-education--community-engagement). The create/edit/publish endpoints listed there (`POST/PUT/DELETE /api/education/content`, `POST /api/education/events`) are exactly the ones the web content-management screen calls — no separate web-specific versions exist. This section covers the one additional web-only view: content performance.
+The `EducationContent` and `EducationEvent` entities and the patient-facing read endpoints (`GET /api/education/feed`, etc.) are documented in the [mobile doc's Module 9](./mobilebackend.md#9-education--community-engagement). The create/edit/publish endpoints listed there (`POST/PUT/DELETE /api/education/content`, `POST /api/education/events`) are exactly the ones the web content-management screen calls — no separate web-specific versions exist. This section covers the one additional web-only view: content performance.
 
 ### `GET /api/education/content/{id}/stats`
 
@@ -920,9 +926,9 @@ The `EducationContent` and `EducationEvent` entities and the patient-facing read
 
 ## 10. Facility-Managed Patients
 
-This is the web-side home of everything documented in the [mobile doc's Module 11: Facility-Managed Patients & Manual Entry](./mobile_api_documentation.md#11-facility-managed-patients--manual-entry) — `POST /api/facility-admin/patients`, `GET /api/facility-admin/patients`, `PUT /api/facility-admin/patients/{patientId}/assign-clinician`, `POST /api/facility-admin/patients/{patientId}/entries/{context}`, `POST /api/facility-admin/form-templates`, and `GET /api/facility-admin/patients/{patientId}/full-history`. Refer there for full request/response detail on each. This section adds the bulk-assignment workflow specific to the web admin UI's patient-assignment screen.
+This is the web-side home of everything documented in the [mobile doc's Module 11: Facility-Managed Patients & Manual Entry](./mobilebackend.md#11-facility-managed-patients--manual-entry) — `POST /api/facility-admin/patients`, `GET /api/facility-admin/patients`, `PUT /api/facility-admin/patients/{patientId}/assign-clinician`, `POST /api/facility-admin/patients/{patientId}/entries/{context}`, `POST /api/facility-admin/form-templates`, and `GET /api/facility-admin/patients/{patientId}/full-history`. Refer there for full request/response detail on each. This section adds the bulk-assignment workflow specific to the web admin UI's patient-assignment screen.
 
-**Emergency / referral access to full patient history:** the "View patient history" button shown on a patient's record screen calls `GET /api/facility-admin/patients/{patientId}/full-history`, consent-gated exactly like the QR-scan path mobile uses (`GET /api/profile/lookup/{qrToken}/full-history`). Both paths return the identical full cross-module record shape and both are recorded in the patient's access log — see the mobile doc's [Personal Health Profile module](./mobile_api_documentation.md#2-personal-health-profile) for the complete consent and access-log model shared by both access methods.
+**Emergency / referral access to full patient history:** the "View patient history" button shown on a patient's record screen calls `GET /api/facility-admin/patients/{patientId}/full-history`, consent-gated exactly like the QR-scan path mobile uses (`GET /api/profile/lookup/{qrToken}/full-history`). Both paths return the identical full cross-module record shape and both are recorded in the patient's access log — see the mobile doc's [Personal Health Profile module](./mobilebackend.md#2-personal-health-profile) for the complete consent and access-log model shared by both access methods.
 
 ### `GET /api/facility-admin/patients/unassigned`
 
@@ -983,7 +989,7 @@ Internally this calls `PUT /api/facility-admin/patients/{patientId}/assign-clini
 
 ## Error Codes Reference
 
-In addition to every code listed in the [mobile doc's Error Codes Reference](./mobile_api_documentation.md#error-codes-reference) (which apply identically here, since both platforms share one backend), the web app surfaces a few additional codes:
+In addition to every code listed in the [mobile doc's Error Codes Reference](./mobilebackend.md#error-codes-reference) (which apply identically here, since both platforms share one backend), the web app surfaces a few additional codes:
 
 | HTTP Status | Code | Meaning |
 |---|---|---|

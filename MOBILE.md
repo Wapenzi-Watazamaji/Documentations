@@ -1543,6 +1543,12 @@ Returns all readings pre-formatted for charting, including the computed WHO aler
 
 ## 6. Postpartum & Baby Tracker
 
+> [!NOTE]
+> **Architectural Note: Separate Entities**
+> During the postnatal period, the mother and the baby (or babies) are tracked as completely **separate clinical entities** linked by a `PregnancyRecord`. 
+> - **MotherPostnatalContext**: Tracks her physical recovery (lochia, c-section wound), breast health (mastitis), and mental health (EPDS screenings).
+> - **BabyProfile (1-to-Many)**: Tracks the newborn's pediatric milestones, growth percentiles, and feeding schedules. 
+> This strict separation ensures clean data handling for twins/multiples and prevents overlapping clinical milestones.
 ### `GET /api/postpartum/maternal-checkins/form-template`
 
 **Response `200 OK`:** `{ "success": true, "data": { "...": "FormTemplate entity, context: MATERNAL_CHECKIN" } }`
